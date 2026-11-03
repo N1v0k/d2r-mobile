@@ -79,4 +79,4 @@ if [ $KIND = release ]; then
 fi
 bad=$(unzip -l "$A" | awk '{print $4}' | grep -E '\.(xgs|patched\.bin|data)$|^assets/|overlay|derived\.tsv' | head -3)
 [ -z "$bad" ] || die "APK 里带了不该有的文件：$bad"
-t "好了（${KIND}）：${A}（$(($(stat -f %z "$A") / 1048576)) MB）；核了真表里 $n 个源码里没有的字符串，原生库里 0 处；APK 里没有游戏程序 / 着色器包 / 覆盖层，也没有本机路径"
+t "好了（${KIND}）：${A}（$(($(wc -c < "$A") / 1048576)) MB）；核了真表里 $n 个源码里没有的字符串，原生库里 0 处；APK 里没有游戏程序 / 着色器包 / 覆盖层，也没有本机路径"
