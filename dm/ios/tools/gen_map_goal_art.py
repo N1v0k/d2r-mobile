@@ -7,7 +7,7 @@
   · 名字 = 原版字符串（data/local/lng/strings/*.json 的 zhCN；英文 label_<序号>_en.png 取 enUS，西语 label_<序号>_es.png / _mx.png 取 esES / esMX，俄语 label_<序号>_ru.png 取 ruRU，韩语 label_<序号>_ko.png 取 koKR）；旧译名（自定义页「物品注释与旧译名」开着时游戏显示的名字）取 annot/oldnames.tsv
 产物（构建时生成，不进仓库）：Gen/assets/NativeHUD/mapgoal/{sym_0..6.png, cross.png, heading.png（镜头实验的朝向指针，原版表情轮盘指针）, label_<序号>.png, 旧译名不同的 label_<序号>_old.png, mapgoal.json}。
 用法：python3 dm/ios/tools/gen_map_goal_art.py <原版 RomFS（Update）>   （读包与解贴图走 romfs_art.py）"""
-import csv, json, os, struct, sys
+import csv, json, os, re, struct, sys
 from PIL import Image, ImageDraw, ImageFont
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -61,6 +61,7 @@ def strings(name):
     return {r['Key']: r for r in json.loads(romfs_art.read(ROMFS, 'local/lng/strings/%s.json' % name).decode('utf-8-sig'))}
 
 def label(text, col, font):
+    text = re.sub(r'^(?:\[(?:[mf][sp]|n[sl]|pl)\])+', '', text)
     d0 = ImageDraw.Draw(Image.new('RGBA', (1, 1))); w = int(d0.textlength(text, font=font)) + 2 * PAD_X; h = TEXT_PX + 2 * PAD_Y
     im = Image.new('RGBA', (w, h), (0, 0, 0, BOX_A)); ImageDraw.Draw(im).text((w / 2, h / 2), text, font=font, fill=col + (255,), anchor='mm')
     return im
