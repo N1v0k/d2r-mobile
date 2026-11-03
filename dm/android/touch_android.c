@@ -38,6 +38,8 @@ static double stat_next, skill_add_at;
 static unsigned map_world_seq;
 static int map_world_pending;
 static uint64_t epoch = 1, world = 1, pulse_epoch, pulse_sample, resume_sample;
+static uint32_t rebuilds_seen;
+uint32_t dm_padmode_rebuilds(void);
 static double pulse_hold_start;
 static unsigned seen_world, seen_mouse, seen_tab, seen_use, seen_ident, seen_long, seen_item, seen_stack;
 /* 前端页面（主菜单 / 选角 / 建角 / 读取画面，即不在局内），同 iOS front_ios.m frontendMode：不画控件，第一根手指直接当原生点击交给游戏界面
@@ -144,6 +146,7 @@ void dm_android_touch_uimsg(const char *cat, const char *act, const char *arg) {
     dm_tc_enable_targets(&tc, nav ? (dm_tc_nav_mask(nav_pad() && nav != 2 && !dm_tc_scene_dead()) | (nav == 3 ? 1u << DM_TC_MENU : 0u))
                                   : (((1u << DM_TC_COUNT) - 1) & ~(1u << DM_TC_MAP)));
     dm_uiscreen_set_panel(nav && !dm_tc_scene_dead() && !dm_tc_scene_dialog_only(&scene));
+    { uint32_t rb = dm_padmode_rebuilds(); if (rb != rebuilds_seen) { rebuilds_seen = rb; ++world; } }
     if (dm_touch_game_set_scene) dm_touch_game_set_scene(!nav, epoch, world);
     pthread_mutex_unlock(&lock);
 }

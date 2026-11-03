@@ -117,6 +117,12 @@ void dm_uiscreen_set_panel(int panel) {
 static int map_hold;
 int dm_hud_stack_msg(const char *act, const char *arg) { REQUIRE(act && arg); return 0; }
 void dm_ui_map_hold(int on) { REQUIRE(on==0 || on==1); map_hold=on; }
+static uint32_t test_rebuilds;
+static int scene_game = -1;
+static uint64_t scene_epoch, scene_world;
+static unsigned scene_calls;
+uint32_t dm_padmode_rebuilds(void) { return test_rebuilds; }
+void dm_touch_game_set_scene(int game, uint64_t scene_tag, uint64_t world_tag) { scene_game = game; scene_epoch = scene_tag; scene_world = world_tag; ++scene_calls; }
 static void fixture(int navigation) {
     memset(&tc, 0, sizeof tc);
     memset(&scene, 0, sizeof scene);
@@ -128,6 +134,7 @@ static void fixture(int navigation) {
     frontend = 0; fe_slot = -1; fe_drag = 0; fe_x0 = fe_y0 = 0;
     test_clock_ns = UINT64_C(100000000000); test_sample = 0;
     observed_panel=-1; panel_calls=0; map_hold=-1;
+    rebuilds_seen = 0; test_rebuilds = 0; scene_game = -1; scene_epoch = scene_world = 0; scene_calls = 0;
     dm_tc_set_safe_insets(0, 0); dm_tc_set_edge_bottom(0); dm_tc_set_safe_bottom(0); dm_tc_set_swap_above(0);
     dm_tc_set_panel_state(0); dm_tc_set_tap_box(0); dm_tc_set_cur_stack(0); dm_tc_set_hover_unid(0);
     init_locked();
@@ -389,6 +396,30 @@ static void test_android_panel_observation(void) {
     REQUIRE(tc.navigation_mode==0 && observed_panel==0 && panel_calls==5 && map_hold==0);
 }
 
+static void test_android_padmode_rebuild_world(void) {
+    fixture(0);
+    dm_android_touch_uimsg("PanelManager","UnloadPanel","LoadScreenPanel");
+    REQUIRE(scene.game==1 && scene_calls==1 && scene_game==1);
+    uint64_t world0=scene_world, epoch0=scene_epoch;
+    dm_android_touch_uimsg("PanelManager","OpenPanel","PlayerInventoryExpansionLayout");
+    REQUIRE(scene_calls==2 && scene_game==0 && scene_world==world0);
+    dm_android_touch_uimsg("PanelManager","UnloadPanel","PlayerInventoryExpansionLayout");
+    REQUIRE(scene_calls==3 && scene_game==1 && scene_world==world0);
+    epoch0=scene_epoch;
+    test_rebuilds=1;
+    dm_android_touch_uimsg("PanelManager","LoadPanel","HUDPanel");
+    REQUIRE(scene_calls==4 && scene_world==world0+1 && scene_epoch==epoch0 && scene_game==1);
+    dm_android_touch_uimsg("PanelManager","LoadPanel","HUDPanel");
+    REQUIRE(scene_calls==5 && scene_world==world0+1);
+    test_rebuilds=3;
+    dm_android_touch_uimsg("PanelManager","LoadPanel","HUDPanel");
+    REQUIRE(scene_calls==6 && scene_world==world0+2 && scene_epoch==epoch0);
+    float a[DM_ANDROID_TOUCH_DRAW_FLOATS]; test_rebuilds=4; read_twice(a);
+    REQUIRE(scene_calls==6 && rebuilds_seen==3);
+    dm_android_touch_uimsg("PanelManager","LoadPanel","HUDPanel");
+    REQUIRE(scene_world==world0+3);
+}
+
 static void run_case(const char *name, void (*body)(void)) {
     case_name = name; body(); ++cases; printf("PASS %s\n", name);
 }
@@ -409,6 +440,7 @@ int main(void) {
     run_case("android_cancelled_latch", test_android_cancelled_latch);
     run_case("android_swap_release_cancel", test_android_swap_release_cancel);
     run_case("android_panel_observation", test_android_panel_observation);
+    run_case("android_padmode_rebuild_world", test_android_padmode_rebuild_world);
     printf("RESULT PASS cases=%u assertions=%u; game_quick_taps_10_of_10=NOT_TESTED\n", cases, checks);
     return 0;
 }
