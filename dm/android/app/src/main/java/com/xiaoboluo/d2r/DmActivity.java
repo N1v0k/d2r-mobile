@@ -251,7 +251,8 @@ public class DmActivity extends Activity implements SurfaceHolder.Callback, Disp
     private static void importPack(File source, File runtime, Progress progress) throws IOException {
         for (String item : IMPORT_ITEMS) if (!new File(source, item).exists()) throw new IOException("missing " + item);
         List<String> items = new ArrayList<>(Arrays.asList(IMPORT_ITEMS));
-        for (String item : OPTIONAL_ITEMS) if (new File(source, item).exists()) items.add(item);
+        int marker = items.indexOf("pack_info.txt");
+        for (String item : OPTIONAL_ITEMS) if (new File(source, item).exists()) items.add(marker++, item);
         File part = new File(runtime, "import.part");
         deleteTree(part);
         long sum = 0;
@@ -265,11 +266,11 @@ public class DmActivity extends Activity implements SurfaceHolder.Callback, Disp
             if (p != shown[0]) { shown[0] = p; progress.percent(p); }
         });
         for (String item : items) {
+            if (item.equals("pack_info.txt")) for (String old : OPTIONAL_ITEMS) if (!items.contains(old)) deleteTree(new File(runtime, old));
             File from = new File(part, item), to = new File(runtime, item);
             deleteTree(to);
             if (!from.renameTo(to)) throw new IOException("rename " + item);
         }
-        for (String item : OPTIONAL_ITEMS) if (!items.contains(item)) deleteTree(new File(runtime, item));
         deleteTree(part);
     }
 
