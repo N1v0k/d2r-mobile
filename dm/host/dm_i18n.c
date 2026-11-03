@@ -86,7 +86,7 @@ const char *dm_ui_group(const char *key, int group) {
 // when we take a name ourselves and splice it into a title / list we must skip them (Spanish screenshot: "[ms]Gorro (Nor)"). The marker is always at the start of the string; returns a pointer past it, no copy
 const char *dm_untag(const char *s) {
     if (!s) return s;
-    while (s[0] == '[' && (s[1] == 'm' || s[1] == 'f') && (s[2] == 's' || s[2] == 'p') && s[3] == ']') s += 4;
+    while (s[0] == '[' && (((s[1] == 'm' || s[1] == 'f') && (s[2] == 's' || s[2] == 'p')) || (s[1] == 'n' && (s[2] == 's' || s[2] == 'l')) || (s[1] == 'p' && s[2] == 'l')) && s[3] == ']') s += 4;
     return s;
 }
 

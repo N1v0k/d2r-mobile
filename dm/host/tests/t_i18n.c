@@ -36,7 +36,11 @@ int main(int argc, char **argv) {
             { "de-DE", 0 }, { "ru-RU", 7 }, { "ru", 7 }, { "ru-UA", 7 }, { "be-BY", 0 }, { "uk-UA", 0 }, { "es-ES", 2 }, { "es", 2 }, { "es_ES", 2 }, { "es-Latn-ES", 2 }, { "es-419", 10 }, { "es-MX", 10 }, { "es-US", 10 }, { "es-AR", 10 }, { "fr-CA", 0 }, { "it-IT", 0 }, { "ko-KR", 5 }, { "ko", 5 }, { "ko_KR", 5 }, { "ko-Kore-KR", 5 }, { "pl-PL", 0 }, { "ja-JP", 0 }, { "pt-BR", 0 }, { "nl-NL", 0 }, { "ar", 0 }, { "zu-ZA", 0 } };
         for (unsigned i = 0; i < sizeof c / sizeof *c; i++) { char w[8], g[8]; snprintf(w, sizeof w, "%d", c[i].want); snprintf(g, sizeof g, "%d", dm_lang_from_tag(c[i].t)); expect(c[i].t, g, w); }
         expect("性别标记：[ms] 去掉", dm_untag("[ms]Gorro"), "Gorro"); expect("性别标记：连写去掉", dm_untag("[fs][fp]Botas"), "Botas");
-        expect("性别标记：注释方括号不动", dm_untag("[Exc] Botas"), "[Exc] Botas"); expect("性别标记：中文原样", dm_untag("谐角之冠"), "谐角之冠"); expect("性别标记：只有标记 = 空串", dm_untag("[ms]"), ""); }
+        expect("性别标记：注释方括号不动", dm_untag("[Exc] Botas"), "[Exc] Botas"); expect("性别标记：中文原样", dm_untag("谐角之冠"), "谐角之冠"); expect("性别标记：只有标记 = 空串", dm_untag("[ms]"), "");
+        expect("性别标记：俄语 [ns] 去掉", dm_untag("[ns]короткое копье"), "короткое копье"); expect("性别标记：俄语 [pl] 去掉", dm_untag("[pl]кожаные перчатки"), "кожаные перчатки");
+        expect("性别标记：德语 [ns] 去掉", dm_untag("[ns]gehärtetes Leder"), "gehärtetes Leder"); expect("性别标记：德语 [pl] 去掉", dm_untag("[pl]Lederhandschuhe"), "Lederhandschuhe");
+        expect("性别标记：波兰语 [nl] 去掉", dm_untag("[nl]Skórzane Rękawice"), "Skórzane Rękawice"); expect("性别标记：[ms][pl] 连写去掉", dm_untag("[ms][pl]x"), "x");
+        expect("性别标记：不认识的两字母不动", dm_untag("[np]x"), "[np]x"); expect("性别标记：[pp] 不动", dm_untag("[pp]x"), "[pp]x"); expect("性别标记：半个标记不动", dm_untag("[n"), "[n"); expect("性别标记：缺右括号不动", dm_untag("[ns"), "[ns"); }
     else if (!strcmp(mode, "game")) {   // 设置文件写的英文，游戏随后切回简中：以游戏为准；再切到 zhTW（9）、deDE（1）、esES（2）、esMX（10） | Settings file says English, then the game switches back to Simplified Chinese: the game wins; then switch to zhTW (9), deDE (1), esES (2), esMX (10)
         expect("游戏没设前按设置文件", dm_ui("dmConfirm"), "OK");
         atomic_store(&g_dm_lang, 8); expect("游戏切到 zhCN", dm_ui("dmConfirm"), "确定");
