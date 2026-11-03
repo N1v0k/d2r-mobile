@@ -216,6 +216,24 @@ int main(void) {
       LANGCASE(4, "{ \"Language\": 5, \"VoiceLanguage\": 5 }", "{ \"Language\": 5, \"VoiceLanguage\": 5 }", "开关 = 韩语、文件已是韩文配韩语语音：不动");
       LANGCASE(3, "{ \"Language\": 5, \"VoiceLanguage\": 5 }", "{ \"Language\": 7, \"VoiceLanguage\": 7 }", "开关 = 俄语、文件是韩文：文字与语音都改成 ruRU");
       LANGCASE(1, "{ \"Language\": 5, \"VoiceLanguage\": 5 }", "{ \"Language\": 0, \"VoiceLanguage\": 0 }", "开关 = 英文、文件是韩文：文字与语音都改英文");
+      #define SEEDCASE(tag, wantj, what) do { char sdd[1200], sff[1300]; snprintf(sdd, sizeof sdd, "%s/seed%d", root, ++seedn); mkdir(sdd, 0755); snprintf(sff, sizeof sff, "%s/Settings/Settings.json", sdd); \
+          setenv("DM_LANG", (tag), 1); setenv("DM_TOUCH_DEFAULTS", "1", 1); settings_seed(sdd); unsetenv("DM_TOUCH_DEFAULTS"); unsetenv("DM_LANG"); \
+          FILE *lf = fopen(sff, "rb"); size_t ln_ = lf ? fread(gotj, 1, sizeof gotj - 1, lf) : 0; if (lf) fclose(lf); gotj[ln_] = 0; CHECK(strstr(gotj, (wantj)) != NULL, "首次安装：%s", (what)); } while (0)
+      { int seedn = 0;
+        SEEDCASE("de-DE", "\"Language\": 1,\n    \"VoiceLanguage\": 0\n}", "系统语言 de-DE、资源里没有德语配音分块：Language 1、VoiceLanguage 0（英文配音）");
+        LANGCASE(5, "{ \"Language\": 0, \"VoiceLanguage\": 0 }", "{ \"Language\": 1, \"VoiceLanguage\": 0 }", "开关 = 德语、资源里没有德语配音分块：文字改 deDE，语音配英文");
+        LANGCASE(5, "{ \"Language\": 1, \"VoiceLanguage\": 0 }", "{ \"Language\": 1, \"VoiceLanguage\": 0 }", "开关 = 德语、文件已是德文配英文语音、资源里没有德语配音：不动");
+        { char rd[1300]; snprintf(rd, sizeof rd, "%s/romfs_ru/data/06-00000001.data", root); put(rd, "x"); }
+        SEEDCASE("de-AT", "\"Language\": 1,\n    \"VoiceLanguage\": 1\n}", "系统语言 de-AT、资源里有 6 号分块：Language 1、VoiceLanguage 1（德语配音）"); }
+      LANGCASE(5, "{ \"Language\": 0, \"VoiceLanguage\": 0 }", "{ \"Language\": 1, \"VoiceLanguage\": 1 }", "开关 = 德语、资源里有 6 号分块：文字与语音都改成 deDE");
+      LANGCASE(5, "{ \"Language\": 1, \"VoiceLanguage\": 1 }", "{ \"Language\": 1, \"VoiceLanguage\": 1 }", "开关 = 德语、文件已是德文配德语语音：不动");
+      LANGCASE(5, "{ \"Language\": 1, \"VoiceLanguage\": 0 }", "{ \"Language\": 1, \"VoiceLanguage\": 1 }", "开关 = 德语、文件是德文配英文语音、资源里有 6 号分块：语音跟上（同俄语）");
+      LANGCASE(5, "{ \"Language\": 5, \"VoiceLanguage\": 5 }", "{ \"Language\": 1, \"VoiceLanguage\": 1 }", "开关 = 德语、文件是韩文：文字与语音都改成 deDE");
+      LANGCASE(1, "{ \"Language\": 1, \"VoiceLanguage\": 1 }", "{ \"Language\": 0, \"VoiceLanguage\": 0 }", "开关 = 英文、文件是德文：文字与语音都改英文");
+      LANGCASE(3, "{ \"Language\": 1, \"VoiceLanguage\": 1 }", "{ \"Language\": 7, \"VoiceLanguage\": 7 }", "开关 = 俄语、文件是德文：文字与语音都改成 ruRU");
+      LANGCASE(-1, "{ \"Language\": 1, \"VoiceLanguage\": 0 }", "{ \"Language\": 1, \"VoiceLanguage\": 0 }", "没点过应用、文件是德文配英文语音：一个字不动");
+      VOICECASE(5, 1, "{ \"Language\": 1, \"VoiceLanguage\": 1 }", "{ \"Language\": 1, \"VoiceLanguage\": 0 }", "德文文字 + 明确选了 English 配音：English 配音优先于德语配音");
+      VOICECASE(5, 0, "{ \"Language\": 0, \"VoiceLanguage\": 0 }", "{ \"Language\": 1, \"VoiceLanguage\": 8 }", "开关 = 德语 + 明确选了中文配音：文字改 deDE、配音中文");
       VOICECASE(0, 1, "{ \"Language\": 8, \"VoiceLanguage\": 8 }", "{ \"Language\": 8, \"VoiceLanguage\": 0 }", "中文文字 + English 配音，只改 VoiceLanguage");
       VOICECASE(0, 0, "{ \"Language\": 8, \"VoiceLanguage\": 0 }", "{ \"Language\": 8, \"VoiceLanguage\": 8 }", "中文文字 + 中文配音，只改 VoiceLanguage");
       VOICECASE(-1, 1, "{ \"Language\": 9, \"VoiceLanguage\": 9 }", "{ \"Language\": 9, \"VoiceLanguage\": 0 }", "没动语言行，只把繁中配音改成 English，文字保持繁中");

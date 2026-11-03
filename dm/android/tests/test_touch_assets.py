@@ -62,7 +62,7 @@ class AssetContract(unittest.TestCase):
     def test_hud_strings_available_in_both_languages(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp); strings.generate(root)
-            for folder in ('values', 'values-zh'):
+            for folder in ('values', 'values-zh', 'values-de'):
                 text = (root / folder / 'strings.xml').read_text(encoding='utf-8')
                 # 资源名保留表里的大小写（代码里是 R.string.dmHudLife） | Resource names keep the table's case (the code uses R.string.dmHudLife)
                 for key in ('dmHudLife', 'dmHudMana', 'dmTcCancel', 'dmAndroidHudLevel'):

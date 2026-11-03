@@ -216,7 +216,38 @@ KO = {
         'MoviePlaybackHoldToSkip': ('9c102e1d', ''),
     },
 }
-EXTRA = (('enUS', EN), ('esES', ES), ('esMX', MX), ('ruRU', RU), ('koKR', KO))   # 中文以外改的列 | Columns changed besides Chinese
+DE = {
+    'ui-controller.json': {
+        'UseItemController': ('c5512a63', 'Doppeltippen zum Benutzen'),
+        'OpenHoradricCubeController': ('08b827e1', 'Doppeltippen zum Öffnen'),
+        'ReadScrollController': ('ff287f36', 'Doppeltippen zum Lesen'),
+        'UsePotionOfLifeController': ('f7c6ea8e', 'Doppeltippen, um permanent 20 Leben zu erhalten'),
+        'UseBookOfSkillController': ('5cd61408', 'Doppeltippen, um einen Fertigkeitspunkt zu erhalten'),
+        'UseScrollOfResistanceController': ('ac1e7fa0', 'Doppeltippen zum Einsetzen'),
+        'UseTokenOfAbsolutionController': ('1de7afa9', 'Doppeltippen, um Werte und Fertigkeitspunkte zurückzusetzen'),
+        'UseTerrorTokenAct1Controller': ('37fb8814', 'Doppeltippen zum Terrorisieren (Akt 1)'),
+        'UseTerrorTokenAct2Controller': ('c3c2782c', 'Doppeltippen zum Terrorisieren (Akt 2)'),
+        'UseTerrorTokenAct3Controller': ('25b94898', 'Doppeltippen zum Terrorisieren (Akt 3)'),
+        'UseTerrorTokenAct4Controller': ('a8bc8630', 'Doppeltippen zum Terrorisieren (Akt 4)'),
+        'UseTerrorTokenAct5Controller': ('ff91e2e7', 'Doppeltippen zum Terrorisieren (Akt 5)'),
+        'comparisonTooltipController': ('b40c62bb', ''),
+        'hireComparisonTooltipController': ('40ed633f', ''),
+        'StrYouDiedConsole': ('4a583ec1', 'Ihr seid gestorben.'),
+        'ControllerInteractButton': ('54234e14', ''),
+        'ControllerTitleScreenPrompt': ('8aa32708', 'Auf den Bildschirm tippen, um zu beginnen'),
+        'EnterCharacterName': ('b0253e79', ''),
+        'ControllerCycleComparisonTooltips': ('fa0ed51b', 'Erneut tippen, um mit dem anderen zu vergleichen'),
+        'SelectButtonNoteText': ('21dc449a', ''),
+        'MoviePlaybackHoldToSkip_switch': ('b75b2a19', ''),
+    },
+    'ui.json': {
+        'LevelUpStatsNotificationController': ('f63865af', 'Ihr seid aufgestiegen.'),
+        'LevelUpNotificationController': ('22706071', 'Ihr seid aufgestiegen.'),
+        'QuestLogNotificationController': ('ea6b35a2', 'Quest wurde aktualisiert.'),
+        'MoviePlaybackHoldToSkip': ('b75b2a19', ''),
+    },
+}
+EXTRA = (('enUS', EN), ('esES', ES), ('esMX', MX), ('ruRU', RU), ('koKR', KO), ('deDE', DE))   # 中文以外改的列 | Columns changed besides Chinese
 
 # 手柄支持：手柄说法 ↔ 触摸说法按模式切，不再改字符串文件——build_sidecar 出旁路表，宿主触屏模式把串表里这几个键的串换成触摸说法、
 # 手柄模式换回原文（dm/host/dm_padmode.c）。只有下面这两条是排版用的（大字号，两种模式都要），照旧改文件
