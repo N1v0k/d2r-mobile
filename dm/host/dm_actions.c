@@ -839,7 +839,8 @@ void dm_actions_pump(void) {
             uint32_t xy = pp ? (*(uint32_t *)(pp + 0x10) & 0xffff) | *(uint32_t *)(pp + 0x14) << 16 : 0;
             ((void (*)(int, uint32_t, int, int, uint32_t, uint32_t, int, int, uint64_t, void *, void *, void *))(b + 0x2cecf0))(flag, use, 2, 0xff, xy, tgt, merc, 0xff, 0, col, col + 0xc, col + 0x18);
             ((void (*)(uint64_t))(b + 0x4747b0))(it);
-            if (merc) ((void (*)(uint32_t, int, int))(b + 0x4bd710))(tgt, 1, 0x5b); }   // 腰带格分支喂雇佣兵时原版紧跟的一步（0x392e4c–0x392e58） | The step the original game does right after feeding the mercenary in the belt-cell branch (0x392e4c–0x392e58)
+            if (merc) ((void (*)(uint32_t, int, int))(b + 0x4bd710))(tgt, 1, 0x5b);   // 腰带格分支喂雇佣兵时原版紧跟的一步（0x392e4c–0x392e58） | The step the original game does right after feeding the mercenary in the belt-cell branch (0x392e4c–0x392e58)
+            else ((void (*)(int, uint64_t, int, int, int))(b + 0x35f120))(((int (*)(uint64_t))(b + 0x470e00))(it), 0, 0, 0, 0); }
         else if (merc) ((void (*)(uint64_t))(b + 0x3bf860))(it);   // 背包里的：原版同一个函数（自己发 0x26，目标 = 雇佣兵、目标类型 1） | In the inventory: the same original function (it sends 0x26 itself, target = mercenary, target type 1)
         else if (can) ((void (*)(uint64_t, int))(b + 0x3c0098))(it, 3);
         LOG("使用：物品 id %u（%.3s）%s", use, (const char *)&code, !it ? "没找到" : busy ? "此刻不能用（手上拿着东西 / 玩家状态不允许），没发" : merc ? (force_merc ? "腰带双击：喂给雇佣兵（已调）" : "雇佣兵页开着：喂给雇佣兵（已调）") : force_merc ? "腰带双击：雇佣兵不在 / 这瓶不能喂，不喂也不自己喝" : can ? "已调原版使用" : "原版判定不可使用，没发"); }
