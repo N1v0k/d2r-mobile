@@ -1312,6 +1312,7 @@ int dm_diag_srv_merc(uint32_t id, int *hp, int *mx, int *healing) {
     return 0;
 }
 int dm_diag_difficulty(void) { uint8_t d = 0; return in_game() && tk_rd(g_lastG + 0x104, &d, 1) && d < 3 ? d : -1; }   // 当前局难度（G+0x104：0 普通 1 噩梦 2 地狱），不在局内 -1；一键重开用（dm_cursor.c） | Difficulty of the current run (G+0x104: 0 Normal 1 Nightmare 2 Hell), -1 when not in a run; used by one-tap restart (dm_cursor.c)
+int dm_diag_ladder(int *offline, int *ladder) { uint8_t off = 0; uint32_t lad = 0; if (!in_game() || !tk_rd(g_lastG + 0x101, &off, 1) || !tk_rd(g_lastG + 0x108, &lad, 4)) return 0; *offline = off != 0; *ladder = lad != 0; return 1; }
 uint32_t dm_cur_tick(void) { uint32_t t = 0; if (in_game()) tk_rd(g_lastG + 0x170, &t, 4); return t; }   // 触点脚本（touch_mac.c）用 | For the touch point script (touch_mac.c)
 static uint32_t cur_tick(void) { return dm_cur_tick(); }
 static _Atomic int g_holding;   // DM_TICK_HOLD 冻结中（定义见下） | DM_TICK_HOLD freeze in progress (defined below)

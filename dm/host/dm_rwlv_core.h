@@ -10,3 +10,4 @@ int dm_rw_find_lvoff(const uint8_t *rows, uint32_t n, uint32_t rowsize);
 // 做成以后的需要等级 = 底材需求等级与各符文需求等级的最大值
 // Required level once made = the maximum of the base item's required level and each rune's required level
 int dm_rw_need_level(int base_req, const int *rune_req, int n);
+int dm_rw_allowed(uint8_t bits, int16_t first, int16_t last, int known, int offline, int ladder);

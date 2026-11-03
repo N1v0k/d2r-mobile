@@ -184,8 +184,9 @@ static int build_list(uint8_t *b, uint64_t it) {
     int ns = sockets(b, it), stash_open = *(uint8_t *)(b + 0x2d5ff60) != 0, bp = 0, bx = 0, by = 0, bsl = 0, bw = base_where(b, pl, it, &bp, &bx, &by, &bsl);
     int can_put = bw && !(bw == 1 && bp == PG_STASH && !stash_open);   // 底材在能镶的位置（储藏箱里的要箱子开着）；共享仓库里的照列、不出按钮 | Base item is in a socketable location (one in the stash needs the stash open); one in the shared stash is still listed, without a button
     uint64_t rr = *(uint64_t *)(t + 0x1880), rn = *(uint64_t *)(t + 0x1888); g_list.n = 0;
+    int dm_diag_ladder(int *offline, int *ladder); int offline = 0, ladder = 0, known = dm_diag_ladder(&offline, &ladder);
     for (uint64_t r = 0; rr && r < rn && g_list.n < NROW; r++) { const uint8_t *e = (const uint8_t *)(rr + r * 0xe8);
-        if (!e[0x44] || (e[0xe4] & 2)) continue;
+        if (!e[0x44] || !dm_rw_allowed(e[0xe4], *(const int16_t *)(e + 0x40), *(const int16_t *)(e + 0x42), known, offline, ladder)) continue;
         int nr = 0, cls[6]; for (int k = 0; k < 6; k++) { int v = *(const int32_t *)(e + 0x5c + 4 * k); if (v >= 1) cls[nr++] = v; }
         if (nr != ns) continue;
         int bad = 0; for (int k = 0; k < 3 && !bad; k++) { int ty = *(const int16_t *)(e + 0x56 + 2 * k); if (ty && is_type(b, it, ty)) bad = 1; }

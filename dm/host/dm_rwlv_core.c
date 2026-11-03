@@ -35,3 +35,9 @@ int dm_rw_find_lvoff(const uint8_t *rows, uint32_t n, uint32_t rowsize) {
 }
 
 int dm_rw_need_level(int base_req, const int *rune_req, int n) { int lv = base_req; for (int i = 0; i < n; i++) if (rune_req[i] > lv) lv = rune_req[i]; return lv; }
+
+int dm_rw_allowed(uint8_t bits, int16_t first, int16_t last, int known, int offline, int ladder) {
+    if (!known) return !bits && (first == 0 || last < 0);
+    if (bits & (offline || !ladder ? 4 : 2)) return 0;
+    return offline || first == 0 || last < 0 || (first < 0 && ladder);
+}

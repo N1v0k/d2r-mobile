@@ -17,6 +17,62 @@ static void row(const char *code, uint8_t level, uint8_t req, int lv_off, int re
 static void build(int lv_off, int req_off) { nrow = 0; memset(tab, 0, sizeof tab);
     row("hlm", 11, 0, lv_off, req_off); row("xhm", 51, 25, lv_off, req_off); row("uhm", 79, 59, lv_off, req_off); row("ci3", 85, 64, lv_off, req_off); row("urn", 85, 66, lv_off, req_off); row("ulm", 68, 51, lv_off, req_off);
     row("r05", 15, 15, lv_off, req_off); row("r07", 17, 17, lv_off, req_off); row("r13", 29, 29, lv_off, req_off); }
+static const struct { uint8_t bits; int16_t first, last; int known, offline, ladder, want; const char *why; } k_allow[] = {
+    { 2, 3, 12, 1, 1, 0, 1, "Mosaic offline" },
+    { 2, 3, 12, 1, 1, 1, 1, "Mosaic offline, G+0x108 set: offline still picks mask 4" },
+    { 0, 0, -1, 1, 1, 0, 1, "plain runeword offline" },
+    { 4, 0, -1, 1, 1, 0, 0, "value 4 (forbidden outside ladder) offline" },
+    { 6, 0, -1, 1, 1, 1, 0, "both bits offline" },
+    { 0, 3, 14, 1, 1, 0, 1, "season runeword offline: no season check" },
+    { 0, -1, 5, 1, 1, 0, 1, "negative first offline: no season check" },
+    { 0, 0, 5, 1, 0, 0, 1, "online non-ladder, first == 0" },
+    { 2, 0, -1, 1, 0, 0, 1, "online non-ladder, value 2 is not in mask 4" },
+    { 2, 3, 12, 1, 0, 0, 0, "Mosaic online non-ladder: first > 0 rejects" },
+    { 4, 0, -1, 1, 0, 0, 0, "online non-ladder, value 4 in mask 4" },
+    { 0, 3, -1, 1, 0, 0, 1, "online non-ladder, last < 0" },
+    { 0, 3, 12, 1, 0, 0, 0, "online non-ladder, first > 0 and last >= 0" },
+    { 0, -1, 12, 1, 0, 0, 0, "online non-ladder, first < 0 needs a ladder game" },
+    { 0, -1, -1, 1, 0, 0, 1, "online non-ladder, last < 0 wins before first < 0" },
+    { 2, 0, -1, 1, 0, 1, 0, "ladder, value 2 in mask 2" },
+    { 4, 0, -1, 1, 0, 1, 1, "ladder, value 4 is not in mask 2" },
+    { 6, 0, -1, 1, 0, 1, 0, "ladder, both bits" },
+    { 0, 3, 12, 1, 0, 1, 0, "ladder, first > 0 rejects" },
+    { 0, -1, 12, 1, 0, 1, 1, "ladder, first < 0" },
+    { 0, -1, 12, 1, 0, 5, 1, "any non-zero ladder value counts" },
+    { 0, 0, 12, 1, 0, 1, 1, "ladder, first == 0" },
+    { 4, -1, 5, 1, 0, 1, 1, "ladder, value 4 + first < 0" },
+    { 0, 0, 5, 0, 0, 0, 1, "unknown game, no lock, no season" },
+    { 0, 3, -1, 0, 0, 0, 1, "unknown game, last < 0" },
+    { 0, 3, 12, 0, 1, 0, 0, "unknown game, season runeword" },
+    { 2, 0, -1, 0, 1, 0, 0, "unknown game, value 2" },
+    { 4, 0, -1, 0, 0, 1, 0, "unknown game, value 4" },
+    { 2, 3, 12, 0, 1, 0, 0, "unknown game, Mosaic" },
+    { 0, -1, 3, 0, 0, 1, 0, "unknown game, first < 0" },
+};
+static int server_branch(uint8_t bits, int16_t first, int16_t last, int offline, uint32_t g108) {
+    static const uint32_t table[4] = { 1, 2, 4, 8 };
+    uint32_t idx = offline ? 2 : (g108 == 0 ? 2 : 1);
+    if (table[idx] & bits) goto reject;
+    if (offline) goto ok;
+    if (first == 0) goto ok;
+    if (last < 0) goto ok;
+    if (first > 0) goto reject;
+    if (g108 != 0) goto ok;
+reject: return 0;
+ok: return 1;
+}
+static void rw_allowed_cases(void) {
+    for (unsigned i = 0; i < sizeof k_allow / sizeof *k_allow; i++) { int got = dm_rw_allowed(k_allow[i].bits, k_allow[i].first, k_allow[i].last, k_allow[i].known, k_allow[i].offline, k_allow[i].ladder);
+        if (got != k_allow[i].want) { printf("FAIL dm_rw_allowed row %u (%s): got %d want %d\n", i, k_allow[i].why, got, k_allow[i].want); fails++; } }
+    static const uint8_t bits[] = { 0, 2, 4, 6 }; static const int16_t firsts[] = { 3, 0, -1 }, lasts[] = { -1, 0, 12 }; static const uint32_t g108s[] = { 0, 1, 7 };
+    int n = 0;
+    for (unsigned a = 0; a < 4; a++) for (int off = 0; off < 2; off++) for (unsigned l = 0; l < 3; l++) for (unsigned f = 0; f < 3; f++) for (unsigned z = 0; z < 3; z++, n++) {
+        int want = server_branch(bits[a], firsts[f], lasts[z], off, g108s[l]), got = dm_rw_allowed(bits[a], firsts[f], lasts[z], 1, off, g108s[l] != 0);
+        if (got != want) { printf("FAIL dm_rw_allowed grid bits %u first %d last %d offline %d G+0x108 %u: got %d want %d\n", bits[a], firsts[f], lasts[z], off, g108s[l], got, want); fails++; }
+        int every = 1; for (int o2 = 0; o2 < 2; o2++) for (unsigned l2 = 0; l2 < 3; l2++) every &= server_branch(bits[a], firsts[f], lasts[z], o2, g108s[l2]);
+        if (dm_rw_allowed(bits[a], firsts[f], lasts[z], 0, off, g108s[l] != 0) != every) { printf("FAIL dm_rw_allowed unknown bits %u first %d last %d: want %d\n", bits[a], firsts[f], lasts[z], every); fails++; } }
+    if (n != 216) { printf("FAIL grid size %d\n", n); fails++; }
+}
 int main(void) {
     // 一、找列：物品等级那一列排在需求等级前面（线上缺陷的现场：旧找法只看符文，先撞上物品等级）——必须返回需求等级那一列
     // Part one, finding the column: the item-level column comes before the required-level column (the scene of the reported defect: the old search looked only at runes and hit item level first) - the required-level column must be returned
@@ -46,6 +102,7 @@ int main(void) {
       CHECK(dm_rw_need_level(66, delirium, 3) == 66);   // 迷狂做在宝冠（66）上：底材 66 | Delirium made in a Corona (66): base 66
       CHECK(dm_rw_need_level(64, cure, 3) == 64); }     // 解药做在权冠（64）上：底材 64 | Cure made in a Diadem (64): base 64
     CHECK(dm_rw_need_level(0, NULL, 0) == 0);
+    rw_allowed_cases();
     if (fails) { printf("t_rwlv: %d 处失败\n", fails); return 1; }
     printf("t_rwlv OK\n"); return 0;
 }
